@@ -13,6 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.entity.Role;
@@ -31,10 +32,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 	@Autowired
 	private RoleRepository roleRepo;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		
 		User user = userRepo.findByUserName(username);
+		
 		if (user == null) {
 			logger.error("User not found in the database :{}", username);
 		} else {
@@ -51,6 +57,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	@Override
 	public User saveUser(User user) {
 		logger.info("Saving new user {} to the database", user.getUserName());
+		user.setUserPassword(passwordEncoder.encode(user.getUserPassword())); 
 		return userRepo.save(user);
 	}
 

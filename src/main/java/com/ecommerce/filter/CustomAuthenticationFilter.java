@@ -16,21 +16,28 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
 
-@Configuration
+
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter{
 
 	
 	private final Logger logger = LogManager.getLogger(CustomAuthenticationFilter.class);
 	
-	@Autowired
-	private AuthenticationManager authenticationManager;
+
+	private final AuthenticationManager authenticationManager;
 	
-	public  CustomAuthenticationFilter(AuthenticationManager authenticationManager) {
+
+
+	public CustomAuthenticationFilter(AuthenticationManager authenticationManager) {
+		super();
 		this.authenticationManager = authenticationManager;
 	}
-	
-	
+
+	public AuthenticationManager getAuthenticationManager() {
+		return authenticationManager;
+	}
+
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
 			throws AuthenticationException {

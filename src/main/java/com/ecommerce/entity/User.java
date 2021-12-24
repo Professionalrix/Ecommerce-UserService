@@ -140,9 +140,10 @@ public class User implements Serializable{
 		this.fullName = fullName;
 	}
 
-	public User(Long userId, String fullName,String userName, String userPassword, Collection<Role> roles) {
-		super();
+	public User(Long userId, String fullName , String userName, String userPassword, Collection<Role> roles) {
+		
 		this.userId = userId;
+		this.fullName =fullName;
 		this.userName = userName;
 		this.userPassword = userPassword;
 		this.roles = roles;

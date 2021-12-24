@@ -1,69 +1,65 @@
 package com.ecommerce.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 
-import com.ecommerce.filter.CustomAuthenticationFilter;
+import com.ecommerce.filter.CustomAuthenticationFilter2;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableWebSecurity @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter{
-	
-	@Autowired
-	private UserDetailsService userDetailsService;
-	  
-	@Autowired
-	private BCryptPasswordEncoder bCryptPasswordEncoder;
-	
-	
-	
-	public UserDetailsService getUserDetailsService() {
-		return userDetailsService;
-	}
 
-	public void setUserDetailsService(UserDetailsService userDetailsService) {
+
+	private final UserDetailsService userDetailsService;
+	private final BCryptPasswordEncoder bCryptPasswordEncoder;
+	
+	
+	public SecurityConfig(UserDetailsService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+		super();
 		this.userDetailsService = userDetailsService;
-	}
-
-	public BCryptPasswordEncoder getbCryptPasswordEncoder() {
-		return bCryptPasswordEncoder;
-	}
-
-	public void setbCryptPasswordEncoder(BCryptPasswordEncoder bCryptPasswordEncoder) {
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
 	}
 
 	@Override
-	public void configure(AuthenticationManagerBuilder auth) throws Exception {
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		
 		auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder);
 	}
 
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.csrf().disable();
-		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-		http.authorizeRequests().anyRequest().permitAll();
-		http.addFilter(new CustomAuthenticationFilter(authenticationManagerBean()));
 		
+		CustomAuthenticationFilter2 customAuthenticationFilter = new CustomAuthenticationFilter2(authenticationManagerBean());
+		customAuthenticationFilter.setFilterProcessesUrl("/api/v1/login");
+		
+		http.csrf().disable();
+		http.authorizeRequests().antMatchers("/api/v1/login/**").permitAll();
+		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		http.authorizeRequests().antMatchers(HttpMethod.GET,"/api/v1/users/**").hasAnyAuthority("ROLE_USER");
+		http.authorizeRequests().antMatchers(HttpMethod.POST,"/api/v1/users/save**").hasAnyAuthority("ROLE_ADMIN");
+		http.authorizeRequests().anyRequest().permitAll();
+		//http.addFilter(new CustomAuthenticationFilter2(authenticationManagerBean()));
+		http.addFilter(customAuthenticationFilter);
 	}
 	
 	@Bean
 	@Override
 	public AuthenticationManager authenticationManagerBean() throws Exception{
-		return super.authenticationManagerBean();
 		
+		return super.authenticationManagerBean();
 	}
-	
 	
 }
