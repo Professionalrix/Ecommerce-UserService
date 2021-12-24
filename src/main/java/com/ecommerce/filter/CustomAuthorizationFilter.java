@@ -1,7 +1,8 @@
 package com.ecommerce.filter;
 
 import static java.util.Arrays.stream;
-
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,9 +12,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.tomcat.util.http.parser.Authorization;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.auth0.jwt.JWT;
@@ -22,8 +26,8 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
-
-	private static final String AUTHORIZATION = "Authorization";
+	
+	Logger logger = LogManager.getLogger(CustomAuthorizationFilter.class);
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -49,8 +53,14 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 						});
 						 
 						UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username,null,authorities);
+						SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+						
 						filterChain.doFilter(request, response);
-					} catch (Exception e) {
+					} catch (Exception exception) {
+						logger.info("Error logging in :{}",exception);
+						response.setHeader("error", exception.getMessage());
+						response.sendError(FORBIDDEN.value());
+					
 					
 					}
 										
