@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	@Override
 	public void addRoleToUser(String username, String roleName) {
 		logger.info("Adding role {}  to user {}", roleName, username);
-		User user = userRepo.findByUserName(username.toLowerCase());
+		User user = userRepo.findByUserName(username);
 		Role role = roleRepo.findByName(roleName);
 		user.getRoles().add(role);
 

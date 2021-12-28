@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.tomcat.util.http.MimeHeaders;
 import org.apache.tomcat.util.http.parser.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,14 +49,11 @@ public class UserResource {
 	@Autowired
 	private UserService userService;
 	
-	@GetMapping("/test")
-	public String test() {
-	
-		return "test";
-	}
+	private final Logger logger =  LogManager.getLogger(UserResource.class);
 	
 	@GetMapping("/users")
 	public ResponseEntity<List<User>> getUsers(){
+		logger.trace("home method accessed");
 		return ResponseEntity.ok().body(userService.getUsers()); 
 	}
 	
