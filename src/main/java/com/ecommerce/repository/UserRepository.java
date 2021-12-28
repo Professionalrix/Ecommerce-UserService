@@ -9,5 +9,7 @@ import com.ecommerce.entity.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 	
 	User findByUserName(String userName);
-
+	
+	
+	
 }

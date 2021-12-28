@@ -11,9 +11,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.ecommerce.filter.CustomAuthenticationFilter2;
+import com.ecommerce.filter.CustomAuthenticationFilter;
+import com.ecommerce.filter.CustomAuthorizationFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,17 +43,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		
-		CustomAuthenticationFilter2 customAuthenticationFilter = new CustomAuthenticationFilter2(authenticationManagerBean());
+		CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManagerBean());
 		customAuthenticationFilter.setFilterProcessesUrl("/api/v1/login");
-		
 		http.csrf().disable();
-		http.authorizeRequests().antMatchers("/api/v1/login/**").permitAll();
 		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		http.authorizeRequests().antMatchers("/api/v1/login/**").permitAll();
 		http.authorizeRequests().antMatchers(HttpMethod.GET,"/api/v1/users/**").hasAnyAuthority("ROLE_USER");
-		http.authorizeRequests().antMatchers(HttpMethod.POST,"/api/v1/users/save**").hasAnyAuthority("ROLE_ADMIN");
-		http.authorizeRequests().anyRequest().permitAll();
-		//http.addFilter(new CustomAuthenticationFilter2(authenticationManagerBean()));
+		http.authorizeRequests().antMatchers(HttpMethod.POST,"/api/v1/users/save/**").hasAnyAuthority("ROLE_ADMIN");
+		http.authorizeRequests().anyRequest().authenticated();
 		http.addFilter(customAuthenticationFilter);
+		http.addFilterBefore(new CustomAuthorizationFilter(),UsernamePasswordAuthenticationFilter.class);
 	}
 	
 	@Bean
